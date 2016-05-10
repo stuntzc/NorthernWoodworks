@@ -1,13 +1,9 @@
 /*Custom Style Sheet for Bootstrap Overrides*/
 
 /*remove the rounded corners*/
-/*{
-  -webkit-border-radius: 0;
-     -moz-border-radius: 0;
-          border-radius: 0;
-}*/
 @media (min-width: 768px) {
   .navbar {
     border-radius: 0px;
   }
 }
+

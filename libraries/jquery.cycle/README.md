@@ -1,7 +1,7 @@
 jQuery Cycle Plugin
 ===================
 
-Cycle is an easy-to-use slideshow plugin that provides many options and effects for creating beautiful slideshows.
+Cycle is an  easy-to-use slideshow plugin that provides many options and effects for creating beautiful slideshows.
 
 Links
 

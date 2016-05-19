@@ -22,3 +22,4 @@ regions:
 
 libraries:
   - 'bootstrap_northernwoodworks/global-styling'
+  - 'bootstrap_northernwoodworks/backgrounds'

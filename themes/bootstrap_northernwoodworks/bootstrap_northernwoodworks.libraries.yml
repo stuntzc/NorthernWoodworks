@@ -3,3 +3,7 @@ global-styling:
     theme:
       css/nw.css: {}
       css/full-slider.css: {}
+backgrounds:
+  version: version
+  js:
+    js/background.js: {}

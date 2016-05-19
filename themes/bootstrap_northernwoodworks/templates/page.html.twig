@@ -65,7 +65,13 @@
 {#CS: Added new header section for background slider#}
 {#Header#}
 {% if page.background_slider %}
-
+  {% block background %}
+    <header>
+      <div>
+        {{page.background_slider}}
+      </div>
+    </header>
+  {% endblock %}
 {% endif %}
 {# Navbar #}
 {% if page.navigation or page.navigation_collapsible %}

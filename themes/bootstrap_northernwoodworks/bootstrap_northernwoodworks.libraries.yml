@@ -2,3 +2,4 @@ global-styling:
   css:
     theme:
       css/nw.css: {}
+      css/full-slider.css: {}

@@ -10,6 +10,7 @@
 .carousel-image-position{
 	position: relative;
 }
+
 .carousel-transbox {
   margin: 30px;
   background-color: #ffffff;
@@ -43,4 +44,17 @@
   bottom: 0;
   right: 0;
   z-index: 51;
+}
+
+/*******BACKGROUND*****/
+.small_background img{
+	display: block;
+	min-height: 100%;
+	min-width: 1920px;
+	widows: 100%;
+	height: auto;
+
+	position: fixed;
+	left:0;
+	z-index: -99;
 }

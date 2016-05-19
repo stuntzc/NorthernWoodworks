@@ -16,18 +16,13 @@
 
 .carousel-transbox {
   margin: 30px;
-  background-color: #333333;
-  border: 1px solid black;
+  background-color: #ffffff;
   opacity: 0.6;
-  position: absolute;
   z-index: 50;
 }
 
-.carousel-image-label-right-text-absolute{ 
-  background-color: #ffffff;
-  opacity: 0.6;
+.carousel-image-label{ 
   font-weight: bold;
-  position: absolute; 
   font-size: 19px;
   z-index: 51;
 }

@@ -60,6 +60,14 @@
 	position: fixed;
 	left:0;
 	z-index: -99;
+	
+	top: 50%;
+	transform: translateY(-50%) scale(1.1);
+	-webkit-translateY(-50%);
+
+	/*bluring for firefox*/
+	-webkit-filter:blur(0px);
+	filter:blur(20px);
 }
 
 .large-background img{
@@ -68,7 +76,11 @@
 	width: 100%;
 	height: auto;
 	position: fixed;
-	top: 0;
 	left:0;
 	z-index: -100;
+
+	top: 50%;
+	transform: translateY(-50%);
+	-webkit-translateY(-50%);
+
 }

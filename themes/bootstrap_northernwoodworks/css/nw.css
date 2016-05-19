@@ -47,6 +47,10 @@
 }
 
 /*******BACKGROUND*****/
+#page {
+	background: transparent;
+}
+
 .small-background img{
 	display: block;
 	min-height: 100%;

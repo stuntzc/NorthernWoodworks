@@ -62,6 +62,11 @@
  */
 #}
 {% set container = theme.settings.fluid_container ? 'container-fluid' : 'container' %}
+{#CS: Added new header section for background slider#}
+{#Header#}
+{% if page.background_slider %}
+
+{% endif %}
 {# Navbar #}
 {% if page.navigation or page.navigation_collapsible %}
   {% block navbar %}
@@ -72,8 +77,7 @@
         theme.settings.navbar_position ? 'navbar-' ~ theme.settings.navbar_position|clean_class : container,
       ]
     %}
-    <header{{ navbar_attributes.addClass(navbar_classes) }} id="navbar" role="banner">
-      {#CS: switch the header class to the navbars - to allow for a background block #}
+    <nav{{ navbar_attributes.addClass(navbar_classes) }} id="navbar" role="banner">
       <div class="navbar-header">
         {{ page.navigation }}
         {# .btn-navbar is used as the toggle for collapsed navbar content #}
@@ -93,7 +97,7 @@
           {{ page.navigation_collapsible }}
         </div>
       {% endif %}
-    </header>
+    </nav>
   {% endblock %}
 {% endif %}
 

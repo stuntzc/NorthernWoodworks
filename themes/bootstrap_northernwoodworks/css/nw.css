@@ -15,6 +15,10 @@
 }
 
 .carousel-transbox {
+  position: absolute;
+	padding-left:50px;
+	padding-top: 100px;
+  
   margin: 30px;
   background-color: #ffffff;
   opacity: 0.6;
@@ -22,7 +26,7 @@
 }
 
 .carousel-image-label{ 
-  font-weight: bold;
+	font-weight: bold;
   font-size: 19px;
   z-index: 51;
 }

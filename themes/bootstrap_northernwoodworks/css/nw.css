@@ -67,16 +67,6 @@
 
 footer section.block p, footer section.block a:not(.contextual-links-trigger) {
     color: #f6f6f4;
-    font-size: 14px;
-}
-
-@media only screen and (max-width: 1025px)
-footer section.block p, footer section.block a:not(.contextual-links-trigger) {
-    width: 100%;
-    padding: 0;
-    max-width: none;
-    display: block;
-    border: none;
 }
 
 footer p, footer a:not(.contextual-links-trigger) {
@@ -86,6 +76,15 @@ footer p, footer a:not(.contextual-links-trigger) {
     padding: 0 13px;
 }
 
+@media only screen and (max-width: 1025px){
+footer .block p, footer .block a:not(.contextual-links-trigger) {
+    width: 100%;
+    padding: 0;
+    max-width: none;
+    display: block;
+    border: none;
+	}
+}
 
 /*******BACKGROUND*****/
 #page {

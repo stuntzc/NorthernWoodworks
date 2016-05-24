@@ -13,10 +13,11 @@
 
 /*extend the caption stuff from bootstrap css*/
 .carousel-caption{
-	top: 85%;
+	/*top: 85%;
     transform: translateY(-85%);
     bottom: initial;
     text-align: left;
+*/
 }
 
 .item {

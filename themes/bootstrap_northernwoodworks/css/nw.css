@@ -13,9 +13,10 @@
 
 /*extend the caption stuff from bootstrap css*/
 .carousel-caption{
-	top: 50%;
-	transform: translateY(-50%);
-	bottom: initial;
+	top: 85%;
+    transform: translateY(-85%);
+    bottom: initial;
+    text-align: left;
 }
 
 .item {
@@ -24,6 +25,7 @@
   transform-style: preserve-3d;
   }
 
+/*Custom Carousel Text*/
 .carousel-image-position{
 	position: relative;
 	left:0;

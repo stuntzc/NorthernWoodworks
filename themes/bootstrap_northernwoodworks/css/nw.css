@@ -100,11 +100,11 @@ footer .block p, footer .block a:not(.contextual-links-trigger) {
 }
 
 #footer-social a#linked-in {
-    background-image: url(/sites/all/themes/bootstrap_northernwoodworks/images/linkedin-btn.png);
+    background-image: url(/sites/all/themes/bootstrap_northernwoodworks/images/linkedin_btn.png);
 }
 
 #footer-social a#facebook {
-    background-image: url(/sites/all/themes/bootstrap_northernwoodworks/images/linkedin-btn.png);
+    background-image: url(/sites/all/themes/bootstrap_northernwoodworks/images/facebook_btn.png);
 }
 
 #footer-social a {

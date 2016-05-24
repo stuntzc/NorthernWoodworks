@@ -76,6 +76,10 @@ footer p, footer a:not(.contextual-links-trigger) {
     padding: 0 13px;
 }
 
+.company {
+	border: none;
+}
+
 @media only screen and (max-width: 1025px){
 footer .block p, footer .block a:not(.contextual-links-trigger) {
     width: 100%;

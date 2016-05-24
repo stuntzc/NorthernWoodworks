@@ -117,7 +117,9 @@ footer .block p, footer .block a:not(.contextual-links-trigger) {
     width: 25px;
     z-index: 999;
 }
-
+#footer-social a:hover{
+	background-position:0 -100%;
+}
 /*******BACKGROUND*****/
 #page {
 	background: transparent;

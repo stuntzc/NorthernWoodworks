@@ -70,14 +70,14 @@ footer section.block p, footer section.block a:not(.contextual-links-trigger) {
 }
 
 footer p, footer a:not(.contextual-links-trigger) {
-    border-left: 1px solid #aaa;
     display: inline;
     margin: 0;
     padding: 0 13px;
 }
 
-.company {
-	border: none;
+.border_leftright {
+	 border-left: 1px solid #aaa;
+	 border-right: 1px solid #aaa;
 }
 
 @media only screen and (max-width: 1025px){

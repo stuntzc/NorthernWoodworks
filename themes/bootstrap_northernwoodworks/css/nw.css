@@ -75,9 +75,12 @@ footer p, footer a:not(.contextual-links-trigger) {
     padding: 0 13px;
 }
 
-.border_leftright {
+.border_left {
 	 border-left: 1px solid #aaa;
-	 border-right: 1px solid #aaa;
+}
+
+.border_right {	 
+	border-right: 1px solid #aaa;
 }
 
 @media only screen and (max-width: 1025px){
@@ -88,6 +91,31 @@ footer .block p, footer .block a:not(.contextual-links-trigger) {
     display: block;
     border: none;
 	}
+}
+
+#footer-social {
+    margin-top: 20px;
+    position: relative;
+    text-align: center;
+}
+
+#footer-social a#linked-in {
+    background-image: url(/sites/all/themes/bootstrap_northernwoodworks/images/linkedin-btn.png);
+}
+
+#footer-social a#facebook {
+    background-image: url(/sites/all/themes/bootstrap_northernwoodworks/images/linkedin-btn.png);
+}
+
+#footer-social a {
+    border: 0;
+    display: inline-block;
+    height: 25px;
+    margin: 0 4px;
+    padding: 0;
+    position: relative;
+    width: 25px;
+    z-index: 999;
 }
 
 /*******BACKGROUND*****/

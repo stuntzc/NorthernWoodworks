@@ -25,6 +25,31 @@
   transform-style: preserve-3d;
   }
 
+.carousel-caption{
+    position: absolute;
+    bottom: 20px;
+    font-size: 200%;
+    color: #fff;
+    padding: 0 20px;
+    width: 40%;
+    line-height: 150%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+}
+
+.herotext{
+    position: absolute;
+    bottom: 20px;
+    font-family: 'museo_slab500';
+    font-size: 150%;
+    color: #fff;
+    padding: 0 20px;
+    width: 40%;
+    line-height: 150%;
+    background: rgb(0, 0, 0);
+    background: rgba(0, 0, 0, 0.7);
+}
+
 /*Custom Carousel Text*/
 .carousel-image-position{
 	position: relative;

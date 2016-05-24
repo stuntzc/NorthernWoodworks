@@ -16,21 +16,21 @@
 }
 
 .carousel-transbox {
-  position: absolute;
+  	position: absolute;
 	padding-left:50px;
 	padding-top: 100px;
   
-  margin-top: 60%;
-  width: 100%
-  background-color: #ffffff;
-  opacity: 0.6;
-  z-index: 50;
+  	margin-top: 60%;
+  	width: 100%
+  	background-color: #ffffff;
+  	opacity: 0.6;
+  	z-index: 50;
 }
 
 .carousel-image-label{ 
 	font-weight: bold;
-  font-size: 19px;
-  z-index: 51;
+  	font-size: 23px;
+  	z-index: 49;
 }
 
 /*******BACKGROUND*****/

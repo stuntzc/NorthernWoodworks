@@ -5,8 +5,10 @@
  *
  * Available variables:
  * - attributes: HTML attributes for the containing element.
- * - prefix: (optional) The form element prefix, may not be set.
- * - suffix: (optional) The form element suffix, may not be set.
+ * - errors: (optional) Any inline error messages to display for this form
+ *   element; may not be set.
+ * - has_error: (optional) Flag indicating whether to add the "has_error"
+ *   Bootstrap class for this form element.
  * - required: The required marker, or empty if the associated form element is
  *   not required.
  * - type: The type of the element.
@@ -40,9 +42,9 @@
  * - disabled: True if the element is disabled.
  * - title_display: Title display setting.
  *
- * @see template_preprocess_form_element()
- *
  * @ingroup templates
+ *
+ * @see template_preprocess_form_element()
  */
 #}
 {%
@@ -59,7 +61,7 @@
     is_radio ? 'radio',
     is_checkbox ? 'checkbox',
     is_autocomplete ? 'form-autocomplete',
-    errors ? 'error has-error'
+    has_error ? 'error has-error'
   ]
 %}{%
   set description_classes = [
@@ -73,10 +75,6 @@
     {{ label }}
   {% endif %}
 
-  {% if prefix is not empty %}
-    {{ prefix }}
-  {% endif %}
-
   {% if description_display == 'before' and description.content %}
     <div{{ description.attributes }}>
       {{ description.content }}
@@ -85,12 +83,14 @@
 
   {{ children }}
 
-  {% if suffix is not empty %}
-    {{ suffix }}
-  {% endif %}
-
   {% if label_display == 'after' %}
     {{ label }}
+  {% endif %}
+
+  {% if errors %}
+    <div class="form-item--error-message alert alert-danger alert-sm">
+      {{ errors }}
+    </div>
   {% endif %}
 
   {% if description_display in ['after', 'invisible'] and description.content %}

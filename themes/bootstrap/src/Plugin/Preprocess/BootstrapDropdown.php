@@ -10,11 +10,12 @@ use Drupal\bootstrap\Annotation\BootstrapPreprocess;
 use Drupal\bootstrap\Utility\Element;
 use Drupal\bootstrap\Utility\Unicode;
 use Drupal\bootstrap\Utility\Variables;
+use Drupal\Component\Utility\NestedArray;
 
 /**
  * Pre-processes variables for the "bootstrap_dropdown" theme hook.
  *
- * @ingroup theme_preprocess
+ * @ingroup plugins_preprocess
  *
  * @BootstrapPreprocess("bootstrap_dropdown")
  */
@@ -23,8 +24,8 @@ class BootstrapDropdown extends PreprocessBase implements PreprocessInterface {
   /**
    * {@inheritdoc}
    */
-  protected function preprocessVariables(Variables $variables, $hook, array $info) {
-    $this->preprocessLinks($variables, $hook, $info);
+  protected function preprocessVariables(Variables $variables) {
+    $this->preprocessLinks($variables);
 
     $toggle = Element::create($variables->toggle);
     $toggle->setProperty('split', $variables->split);
@@ -37,7 +38,7 @@ class BootstrapDropdown extends PreprocessBase implements PreprocessInterface {
     ];
 
     // Ensure all attributes are proper objects.
-    $this->preprocessAttributes($variables, $hook, $info);
+    $this->preprocessAttributes();
   }
 
   /**
@@ -45,12 +46,8 @@ class BootstrapDropdown extends PreprocessBase implements PreprocessInterface {
    *
    * @param \Drupal\bootstrap\Utility\Variables $variables
    *   A variables object.
-   * @param string $hook
-   *   The name of the theme hook.
-   * @param array $info
-   *   The theme hook info array.
    */
-  protected function preprocessLinks(Variables $variables, $hook, array $info) {
+  protected function preprocessLinks(Variables $variables) {
     // Convert "dropbutton" theme suggestion variables.
     if (Unicode::strpos($variables->theme_hook_original, 'links__dropbutton') !== FALSE && !empty($variables->links)) {
       $operations = !!Unicode::strpos($variables->theme_hook_original, 'operations');
@@ -58,6 +55,13 @@ class BootstrapDropdown extends PreprocessBase implements PreprocessInterface {
       // Normal dropbutton links are not actually render arrays, convert them.
       foreach ($variables->links as &$link) {
         if (isset($link['title']) && $link['url']) {
+          // Preserve query parameters (if any)
+          if (!empty($link['query'])) {
+            $url_query = $link['url']->getOption('query') ?: [];
+            $link['url']->setOption('query', NestedArray::mergeDeep($url_query , $link['query']));
+          }
+
+          // Build render array.
           $link = [
             '#type' => 'link',
             '#title' => $link['title'],
@@ -89,7 +93,10 @@ class BootstrapDropdown extends PreprocessBase implements PreprocessInterface {
       }
 
       $variables->items = array_values($variables->links);
-      $variables->split = TRUE;
+
+      // Determine if toggle should be a split button.
+      $variables->split = !!$variables->links;
+
       unset($variables->links);
     }
   }

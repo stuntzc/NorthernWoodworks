@@ -1,16 +1,11 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\bg_image_formatter\Plugin\Field\FieldFormatter\BgImageFormatter.
- */
-
 namespace Drupal\bg_image_formatter\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Url;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
 use Drupal\Core\Form\FormStateInterface;
-
 
 /**
  * @FieldFormatter(
@@ -37,8 +32,8 @@ class BgImageFormatter extends ImageFormatter {
         'bg_image_background_size' => '',
         'bg_image_background_size_ie8' => 0,
         'bg_image_media_query' => 'all',
-        'bg_image_important' => 1
-      )
+        'bg_image_important' => 1,
+      ),
     );
   }
 
@@ -49,105 +44,108 @@ class BgImageFormatter extends ImageFormatter {
     $element = array();
     $settings = $this->getSettings();
 
-    // Options for repeating the image
-    $repeat_options = array(
-      'no-repeat' => t('No Repeat'),
-      'repeat' => t('Tiled (repeat)'),
-      'repeat-x' => t('Repeat Horizontally (repeat-x)'),
-      'repeat-y' => t('Repeat Vertically (repeat-y)'),
-    );
-
     $element['image_style'] = array(
-      '#title' => t('Image style'),
+      '#title' => $this->t('Image style'),
       '#type' => 'select',
       '#default_value' => $settings['image_style'],
-      '#empty_option' => t('None (original image)'),
+      '#empty_option' => $this->t('None (original image)'),
       '#options' => image_style_options(),
-      '#description' => t(
+      '#description' => $this->t(
         'Select <a href="@href_image_style">the image style</a> to apply on' .
         'images.',
         array(
-          '@href_image_style' => \Drupal\Core\Url::fromRoute('image.style_add')->toString(),
+          '@href_image_style' => Url::fromRoute('image.style_add')->toString(),
         )
-      )
+      ),
     );
 
-    // Fieldset for css settings
+    // Fieldset for css settings.
     $element['css_settings'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Default CSS Settings'),
-      '#description' => t('Default CSS settings for outputting the background property. These settings will be concatenated to form a complete css statement that uses the "background" property. For more information on the css background property see http://www.w3schools.com/css/css_background.asp"'),
+      '#title' => $this->t('Default CSS Settings'),
+      '#description' => $this->t('Default CSS settings for outputting the background property. These settings will be concatenated to form a complete css statement that uses the "background" property. For more information on the css background property see http://www.w3schools.com/css/css_background.asp"'),
     );
-    // The selector for the background property
+    // The selector for the background property.
     $element['css_settings']['bg_image_selector'] = array(
       '#type' => 'textarea',
-      '#title' => t('Selector(s)'),
-      '#description' => t('A valid CSS selector that will be used to apply the background image. One per line. If the field is a multivalue field, the first line will be applied to the first value, the second to the second value... and so on.'),
+      '#title' => $this->t('Selector(s)'),
+      '#description' => $this->t('A valid CSS selector that will be used to apply the background image. One per line. If the field is a multivalue field, the first line will be applied to the first value, the second to the second value... and so on. Tokens are supported.'),
       '#default_value' => $settings['css_settings']['bg_image_selector'],
     );
-    // The selector for the background property
+    // The token help relevant to this entity type.
+    $element['css_settings']['token_help'] = array(
+      '#theme' => 'token_tree_link',
+      '#token_types' => ['user', $form['#entity_type']],
+    );
+    // The selector for the background property.
     $element['css_settings']['bg_image_color'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Color'),
-      '#description' => t('The background color formatted as any valid css color format (e.g. hex, rgb, text, hsl) [<a href="http://www.w3schools.com/css/pr_background-color.asp">css property: background-color</a>]'),
+      '#type' => 'textarea',
+      '#title' => $this->t('Color'),
+      '#description' => $this->t('The background color formatted as any valid css color format (e.g. hex, rgb, text, hsl) [<a href="@url">css property: background-color</a>]. One per line. If the field is a multivalue field, the first line will be applied to the first value, the second to the second value... and so on.', array('@url' => 'http://www.w3schools.com/css/pr_background-color.asp')),
       '#default_value' => $settings['css_settings']['bg_image_color'],
     );
 
-    // The selector for the background property
+    // The selector for the background property.
     $element['css_settings']['bg_image_x'] = array(
       '#type' => 'textfield',
-      '#title' => t('Horizontal Alignment'),
-      '#description' => t('The horizontal alignment of the background image formatted as any valid css alignment. [<a href="http://www.w3schools.com/css/pr_background-position.asp">css property: background-position</a>]'),
+      '#title' => $this->t('Horizontal Alignment'),
+      '#description' => $this->t('The horizontal alignment of the background image formatted as any valid css alignment. [<a href="http://www.w3schools.com/css/pr_background-position.asp">css property: background-position</a>]'),
       '#default_value' => $settings['css_settings']['bg_image_x'],
     );
-    // The selector for the background property
+    // The selector for the background property.
     $element['css_settings']['bg_image_y'] = array(
       '#type' => 'textfield',
-      '#title' => t('Vertical Alignment'),
-      '#description' => t('The vertical alignment of the background image formatted as any valid css alignment. [<a href="http://www.w3schools.com/css/pr_background-position.asp">css property: background-position</a>]'),
+      '#title' => $this->t('Vertical Alignment'),
+      '#description' => $this->t('The vertical alignment of the background image formatted as any valid css alignment. [<a href="http://www.w3schools.com/css/pr_background-position.asp">css property: background-position</a>]'),
       '#default_value' => $settings['css_settings']['bg_image_y'],
     );
-    // The selector for the background property
+    // The selector for the background property.
     $element['css_settings']['bg_image_attachment'] = array(
       '#type' => 'radios',
-      '#title' => t('Background Attachment'),
-      '#description' => t('The attachment setting for the background image. [<a href="http://www.w3schools.com/css/pr_background-attachment.asp">css property: background-attachment</a>]'),
-      '#options' => array('scroll' => 'Scroll', 'fixed' => 'Fixed'),
+      '#title' => $this->t('Background Attachment'),
+      '#description' => $this->t('The attachment setting for the background image. [<a href="http://www.w3schools.com/css/pr_background-attachment.asp">css property: background-attachment</a>]'),
+      '#options' => array(FALSE => $this->t('Ignore'), 'scroll' => 'Scroll', 'fixed' => 'Fixed'),
       '#default_value' => $settings['css_settings']['bg_image_attachment'],
     );
-    // The background-repeat property
+    // The background-repeat property.
     $element['css_settings']['bg_image_repeat'] = array(
       '#type' => 'radios',
-      '#title' => t('Background Repeat'),
-      '#description' => t('Define the repeat settings for the background image. [<a href="http://www.w3schools.com/css/pr_background-repeat.asp">css property: background-repeat</a>]'),
-      '#options' => $repeat_options,
+      '#title' => $this->t('Background Repeat'),
+      '#description' => $this->t('Define the repeat settings for the background image. [<a href="http://www.w3schools.com/css/pr_background-repeat.asp">css property: background-repeat</a>]'),
+      '#options' => array(
+        FALSE => $this->t('Ignore'),
+        'no-repeat' => $this->t('No Repeat'),
+        'repeat' => $this->t('Tiled (repeat)'),
+        'repeat-x' => $this->t('Repeat Horizontally (repeat-x)'),
+        'repeat-y' => $this->t('Repeat Vertically (repeat-y)'),
+      ),
       '#default_value' => $settings['css_settings']['bg_image_repeat'],
     );
-    // The background-size property
+    // The background-size property.
     $element['css_settings']['bg_image_background_size'] = array(
       '#type' => 'textfield',
-      '#title' => t('Background Size'),
-      '#description' => t('The size of the background (NOTE: CSS3 only. Useful for responsive designs) [<a href="http://www.w3schools.com/cssref/css3_pr_background-size.asp">css property: background-size</a>]'),
+      '#title' => $this->t('Background Size'),
+      '#description' => $this->t('The size of the background (NOTE: CSS3 only. Useful for responsive designs) [<a href="http://www.w3schools.com/cssref/css3_pr_background-size.asp">css property: background-size</a>]'),
       '#default_value' => $settings['css_settings']['bg_image_background_size'],
     );
-    // background-size:cover suppor for IE8
+    // background-size:cover suppor for IE8.
     $element['css_settings']['bg_image_background_size_ie8'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Add background-size:cover support for ie8'),
-      '#description' => t('The background-size css property is only supported on browsers that support CSS3. However, there is a workaround for IE using Internet Explorer\'s built-in filters (http://msdn.microsoft.com/en-us/library/ms532969%28v=vs.85%29.aspx). Check this box to add the filters to the css. Sometimes it works well, sometimes it doesn\'t. Use at your own risk'),
+      '#title' => $this->t('Add background-size:cover support for ie8'),
+      '#description' => $this->t('The background-size css property is only supported on browsers that support CSS3. However, there is a workaround for IE using Internet Explorer\'s built-in filters (http://msdn.microsoft.com/en-us/library/ms532969%28v=vs.85%29.aspx). Check this box to add the filters to the css. Sometimes it works well, sometimes it doesn\'t. Use at your own risk'),
       '#default_value' => $settings['css_settings']['bg_image_background_size_ie8'],
     );
-    // The media query specifics
+    // The media query specifics.
     $element['css_settings']['bg_image_media_query'] = array(
       '#type' => 'textfield',
-      '#title' => t('Media Query'),
-      '#description' => t('Apply this background image css using a media query. CSS3 Only. Useful for responsive designs. example: only screen and (min-width:481px) and (max-width:768px) [<a href="http://www.w3.org/TR/css3-mediaqueries/">Read about media queries</a>]'),
+      '#title' => $this->t('Media Query'),
+      '#description' => $this->t('Apply this background image css using a media query. CSS3 Only. Useful for responsive designs. example: only screen and (min-width:481px) and (max-width:768px) [<a href="http://www.w3.org/TR/css3-mediaqueries/">Read about media queries</a>]'),
       '#default_value' => $settings['css_settings']['bg_image_media_query'],
     );
     $element['css_settings']['bg_image_important'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Add "!important" to the background property.'),
-      '#description' => t('This can be helpful to override any existing background image or color properties added by the theme.'),
+      '#title' => $this->t('Add "!important" to the background property.'),
+      '#description' => $this->t('This can be helpful to override any existing background image or color properties added by the theme.'),
       '#default_value' => $settings['css_settings']['bg_image_important'],
     );
 
@@ -164,17 +162,17 @@ class BgImageFormatter extends ImageFormatter {
     $image_styles = image_style_options(FALSE);
     unset($image_styles['']);
     if (isset($settings['css_settings']['bg_image_selector'])) {
-      $summary[] = t('CSS Selector: @selector', array('@selector' => $settings['css_settings']['bg_image_selector']));
+      $summary[] = $this->t('CSS Selector: @selector', array('@selector' => $settings['css_settings']['bg_image_selector']));
     }
     else {
-      $summary[] = t('No selector');
+      $summary[] = $this->t('No selector');
     }
 
     if (isset($image_styles[$settings['image_style']])) {
-      $summary[] = t('URL for image style: @style', array('@style' => $image_styles[$settings['image_style']]));
+      $summary[] = $this->t('URL for image style: @style', array('@style' => $image_styles[$settings['image_style']]));
     }
     else {
-      $summary[] = t('Original image style');
+      $summary[] = $this->t('Original image style');
     }
 
     return $summary;
@@ -189,6 +187,17 @@ class BgImageFormatter extends ImageFormatter {
     $settings = $this->getSettings();
     $css_settings = $settings['css_settings'];
     $image_style = $settings['image_style'] ? $settings['image_style'] : NULL;
+    $selectors = explode(PHP_EOL, trim($css_settings['bg_image_selector']));
+    $colors = explode(PHP_EOL, trim($css_settings['bg_image_color']));
+
+    // Filter out empty selectors
+    $selectors = array_map(function($value) {
+      return trim($value, ',');
+    }, $selectors);
+
+    // Filter out empty colors
+    $colors = array_filter(array_map('trim', $colors));
+
     $files = $this->getEntitiesToView($items, $langcode);
 
     // Early opt-out if the field is empty.
@@ -196,29 +205,162 @@ class BgImageFormatter extends ImageFormatter {
       return $elements;
     }
 
-    $media_query = isset($css_settings['bg_image_media_query']) ? $css_settings['bg_image_media_query'] : 'all';
+    // Prepare token data in bg image css selector.
+    $token_data = array(
+      'user' => \Drupal::currentUser(),
+      $items->getEntity()->getEntityTypeId() => $items->getEntity(),
+    );
+    if (!empty($css_settings['bg_image_selector'])) {
+      $css_settings['bg_image_selector'] = \Drupal::token()->replace($css_settings['bg_image_selector'], $token_data);
+    }
 
     foreach ($files as $delta => $file) {
+      $css_settings['bg_image_selector'] = $selectors[$delta % count($selectors)];
+      $css_settings['bg_image_color'] = $colors[$delta % count($colors)];
+
       if ($image_style) {
         $style = $this->imageStyleStorage->load($image_style);
         $image_url = $style->buildUrl($file->getFileUri());
-      } else {
+      }
+      else {
         $image_url = file_create_url($file->getFileUri());
       }
 
-      $css = bg_image_add_background_image($image_url, $css_settings);
+      $css = $this->getBackgroundImageCss($image_url, $css_settings);
+
+      // Define unique key to prevent collisions when displaying multiple
+      // background images on the same page.
+      $html_head_key = 'bg_image_formatter_css__s' . sha1(
+          implode('__', [
+            $items->getEntity()->uuid(),
+            $items->getName(),
+            $settings['image_style'],
+            $delta
+          ])
+        );
 
       $elements['#attached']['html_head'][] = [[
         '#tag' => 'style',
         '#attributes' => [
-          'media' => $media_query
+          'media' => $css['media'],
         ],
-        '#value' => $css
-      ], 'bg_image_formatter_css_' . $delta];
+        '#value' => $css['style'],
+      ], $html_head_key,
+      ];
     }
 
     return $elements;
   }
+
+  /**
+   * Function taken from the module 'bg_image'.
+   *
+   * Adds a background image to the page using the
+   * css 'background' property.
+   *
+   * @param string $image_path
+   *    The path of the image to use. This can be either
+   *      - A relative path e.g. sites/default/files/image.png
+   *      - A uri: e.g. public://image.png.
+   * @param array $css_settings
+   *    An array of css settings to use. Possible values are:
+   *      - bg_image_selector: The css selector to use
+   *      - bg_image_color: The background color
+   *      - bg_image_x: The x offset
+   *      - bg_image_y: The y offset
+   *      - bg_image_attachment: The attachment property (scroll or fixed)
+   *      - bg_image_repeat: The repeat settings
+   *      - bg_image_background_size: The background size property if necessary
+   *    Default settings will be used for any values not provided.
+   * @param string $image_style
+   *   Optionally add an image style to the image before applying it to the
+   *   background.
+   *
+   * @return array
+   *   The array containing the CSS.
+   */
+  public function getBackgroundImageCss($image_path, $css_settings = array(), $image_style = NULL) {
+    $defaults = [
+      'bg_image_selector' => '',
+      'bg_image_color' => '#FFFFFF',
+      'bg_image_x' => 'left',
+      'bg_image_y' => 'top',
+      'bg_image_attachment' => 'scroll',
+      'bg_image_repeat' => 'no-repeat',
+      'bg_image_important' => 1,
+      'bg_image_background_size' => '',
+      'bg_image_background_size_ie8' => 0,
+      'bg_image_media_query' => 'all',
+    ];
+
+    $css_settings += $defaults;
+
+    // Pull the default css setting if not provided.
+    $selector = $css_settings['bg_image_selector'];
+    $bg_color = $css_settings['bg_image_color'];
+    $bg_x = $css_settings['bg_image_x'];
+    $bg_y = $css_settings['bg_image_y'];
+    $attachment = $css_settings['bg_image_attachment'];
+    $repeat = $css_settings['bg_image_repeat'];
+    $important = $css_settings['bg_image_important'];
+    $background_size = $css_settings['bg_image_background_size'];
+    $background_size_ie8 = $css_settings['bg_image_background_size_ie8'];
+    $media_query = $css_settings['bg_image_media_query'];
+
+    // If important is true, we turn it into a string for css output.
+    if ($important) {
+      $important = '!important';
+    }
+    else {
+      $important = '';
+    }
+
+    // Handle the background size property.
+    $bg_size = '';
+    $ie_bg_size = '';
+    if ($background_size) {
+      // CSS3.
+      $bg_size = sprintf('background-size: %s %s;', $background_size, $important);
+      // Let's cover ourselves for other browsers as well...
+      $bg_size .= sprintf('-webkit-background-size: %s %s;', $background_size, $important);
+      $bg_size .= sprintf('-moz-background-size: %s %s;', $background_size, $important);
+      $bg_size .= sprintf('-o-background-size: %s %s;', $background_size, $important);
+      // IE filters to apply the cover effect.
+      if ($background_size == 'cover' && $background_size_ie8) {
+        $ie_bg_size = sprintf("filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='%s', sizingMethod='scale');", $image_path);
+        $ie_bg_size .= sprintf("-ms-filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='%s', sizingMethod='scale');", $image_path);
+      }
+    }
+
+    // Add the css if we have everything we need.
+    if ($selector && $image_path) {
+      $style = sprintf('%s {', $selector);
+      if ($bg_color) {
+        $style .= sprintf('background-color: %s %s;', $bg_color, $important);
+      }
+      $style .= sprintf("background-image: url('%s') %s;", $image_path, $important);
+      if ($repeat) {
+        $style .= sprintf('background-repeat: %s %s;', $repeat, $important);
+      }
+      if ($attachment) {
+        $style .= sprintf('background-attachment: %s %s;', $attachment, $important);
+      }
+      if ($bg_x && $bg_y) {
+        $style .= sprintf('background-position: %s %s %s;', $bg_x, $bg_y, $important);
+      }
+      $style .= $bg_size;
+      $style .= $background_size_ie8 ? $ie_bg_size : '';
+      $style .= "}";
+
+      return [
+        'type' => 'inline',
+        'style' => $style,
+        'media' => $media_query,
+        'group' => CSS_THEME,
+      ];
+    }
+
+    return [];
+  }
+
 }
-
-

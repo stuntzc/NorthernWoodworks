@@ -15,11 +15,11 @@
  * - suffix: Markup to display after the input element.
  * - type: The type of input.
  *
+ * @ingroup templates
+ *
  * @see \Drupal\bootstrap\Plugin\Preprocess\InputButton
  * @see \Drupal\bootstrap\Plugin\Preprocess\Input
  * @see template_preprocess_input()
- *
- * @ingroup templates
  */
 #}
 {% spaceless %}
@@ -47,7 +47,6 @@
       set classes = [
         'btn',
         'dropdown-toggle',
-        theme.settings.button_size ? theme.settings.button_size,
       ]
     %}
     <button{{ split_button_attributes.addClass(classes) }} type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

@@ -6,8 +6,12 @@
 
 namespace Drupal\bootstrap\Utility;
 
+use Drupal\Core\Template\Attribute;
+
 /**
  * Class for managing multiple types of attributes commonly found in Drupal.
+ *
+ * @ingroup utility
  *
  * @see \Drupal\bootstrap\Utility\Attributes
  * @see \Drupal\bootstrap\Utility\Element
@@ -173,7 +177,11 @@ class DrupalAttributes extends ArrayObject {
    */
   public function getAttributes($type = DrupalAttributes::ATTRIBUTES) {
     if (!isset($this->attributes[$type])) {
-      $this->attributes[$type] = new Attributes($this->offsetGet($this->attributePrefix . $type, []));
+      $attributes = &$this->offsetGet($this->attributePrefix . $type, []);
+      if ($attributes instanceof Attribute) {
+        $attributes = $attributes->toArray();
+      }
+      $this->attributes[$type] = new Attributes($attributes);
     }
     return $this->attributes[$type];
   }

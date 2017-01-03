@@ -14,14 +14,18 @@ use Drupal\bootstrap\Utility\Storage;
 use Drupal\bootstrap\Utility\StorageItem;
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ThemeHandlerInterface;
+use Drupal\Core\Site\Settings;
+use Drupal\Core\Url;
 
 /**
  * Defines a theme object.
+ *
+ * @ingroup utility
  */
 class Theme {
 
   /**
-   * Ignores the following folders during file scans of a theme.
+   * Ignores the following directories during file scans of a theme.
    *
    * @see \Drupal\bootstrap\Theme::IGNORE_ASSETS
    * @see \Drupal\bootstrap\Theme::IGNORE_CORE
@@ -31,17 +35,17 @@ class Theme {
   const IGNORE_DEFAULT = -1;
 
   /**
-   * Ignores the folders "assets", "css", "images" and "js".
+   * Ignores the directories "assets", "css", "images" and "js".
    */
   const IGNORE_ASSETS = 0x1;
 
   /**
-   * Ignores the folders "config", "lib" and "src".
+   * Ignores the directories "config", "lib" and "src".
    */
   const IGNORE_CORE = 0x2;
 
   /**
-   * Ignores the folders "docs" and "documentation".
+   * Ignores the directories "docs" and "documentation".
    */
   const IGNORE_DOCS = 0x4;
 
@@ -51,9 +55,29 @@ class Theme {
   const IGNORE_DEV = 0x8;
 
   /**
-   * Ignores the folders "templates" and "theme".
+   * Ignores the directories "templates" and "theme".
    */
   const IGNORE_TEMPLATES = 0x16;
+
+  /**
+   * Flag indicating if the theme is Bootstrap based.
+   *
+   * @var bool
+   */
+  protected $bootstrap;
+
+  /**
+   * Flag indicating if the theme is in "development" mode.
+   *
+   * This property can only be set via `settings.local.php`:
+   *
+   * @code
+   * $settings['theme.dev'] = TRUE;
+   * @endcode
+   *
+   * @var bool
+   */
+  protected $dev;
 
   /**
    * The current theme info.
@@ -61,6 +85,33 @@ class Theme {
    * @var array
    */
   protected $info;
+
+  /**
+   * A URL for where a livereload instance is listening, if set.
+   *
+   * This property can only be set via `settings.local.php`:
+   *
+   * @code
+   * // Enable default value: //127.0.0.1:35729/livereload.js.
+   * $settings['theme.livereload'] = TRUE;
+   *
+   * // Or, set just the port number: //127.0.0.1:12345/livereload.js.
+   * $settings['theme.livereload'] = 12345;
+   *
+   * // Or, Set an explicit URL.
+   * $settings['theme.livereload'] = '//127.0.0.1:35729/livereload.js';
+   * @endcode
+   *
+   * @var string
+   */
+  protected $livereload;
+
+  /**
+   * The theme machine name.
+   *
+   * @var string
+   */
+  protected $name;
 
   /**
    * The current theme Extension object.
@@ -84,6 +135,13 @@ class Theme {
   protected $themeHandler;
 
   /**
+   * The update plugin manager.
+   *
+   * @var \Drupal\bootstrap\Plugin\UpdateManager
+   */
+  protected $updateManager;
+
+  /**
    * Theme constructor.
    *
    * @param \Drupal\Core\Extension\Extension $theme
@@ -92,16 +150,69 @@ class Theme {
    *   The theme handler object.
    */
   public function __construct(Extension $theme, ThemeHandlerInterface $theme_handler) {
-    $name = $theme->getName();
+    // Determine if "development mode" is set.
+    $this->dev = !!Settings::get('theme.dev');
+
+    // Determine the URL for livereload, if set.
+    $this->livereload = '';
+    if ($livereload = Settings::get('theme.livereload')) {
+      // If TRUE, then set the port to the default used by grunt-contrib-watch.
+      if ($livereload === TRUE) {
+        $livereload = '//127.0.0.1:35729/livereload.js';
+      }
+      // If an integer, assume it's a port.
+      else if (is_int($livereload)) {
+        $livereload = "//127.0.0.1:$livereload/livereload.js";
+      }
+      // If it's scalar, attempt to parse the URL.
+      elseif (is_scalar($livereload)) {
+        try {
+          $livereload = Url::fromUri($livereload)->toString();
+        }
+        catch (\Exception $e) {
+          $livereload = '';
+        }
+      }
+
+      // Typecast livereload URL to a string.
+      $this->livereload = "$livereload" ?: '';
+    }
+
+    $this->name = $theme->getName();
     $this->theme = $theme;
     $this->themeHandler = $theme_handler;
     $this->themes = $this->themeHandler->listInfo();
-    $this->info = isset($this->themes[$name]->info) ? $this->themes[$name]->info : [];
+    $this->info = isset($this->themes[$this->name]->info) ? $this->themes[$this->name]->info : [];
+    $this->bootstrap = $this->subthemeOf('bootstrap');
 
-    // Only install the theme if there is no schema version currently set.
-    if (!$this->getSetting('schema')) {
-      $this->install();
+    // Only install the theme if it's Bootstrap based and there are no schemas
+    // currently set.
+    if ($this->isBootstrap() && !$this->getSetting('schemas')) {
+      try {
+        $this->install();
+      }
+      catch (\Exception $e) {
+        // Intentionally left blank.
+        // @see https://www.drupal.org/node/2697075
+      }
     }
+  }
+
+  /**
+   * Serialization method.
+   */
+  public function __sleep() {
+    // Only store the theme name.
+    return ['name'];
+  }
+
+  /**
+   * Unserialize method.
+   */
+  public function __wakeup() {
+    $theme_handler = Bootstrap::getThemeHandler();
+    $theme = $theme_handler->getTheme($this->name);
+    $this->__construct($theme, $theme_handler);
   }
 
   /**
@@ -121,10 +232,15 @@ class Theme {
    *   The theme settings for drupalSettings.
    */
   public function drupalSettings() {
+    // Immediately return if theme is not Bootstrap based.
+    if (!$this->isBootstrap()) {
+      return [];
+    }
+
     $cache = $this->getCache('drupalSettings');
     $drupal_settings = $cache->getAll();
     if (!$drupal_settings) {
-      foreach ($this->getSettingPlugins() as $name => $setting) {
+      foreach ($this->getSettingPlugin() as $name => $setting) {
         if ($setting->drupalSettings()) {
           $drupal_settings[$name] = TRUE;
         }
@@ -242,25 +358,36 @@ class Theme {
    *
    * @param string $name
    *   The name of the item to retrieve from the theme cache.
+   * @param array $context
+   *   Optional. An array of additional context to use for retrieving the
+   *   cached storage.
    * @param mixed $default
-   *   The default value to use if $name does not exist.
+   *   Optional. The default value to use if $name does not exist.
    *
    * @return mixed|\Drupal\bootstrap\Utility\StorageItem
    *   The cached value for $name.
    */
-  public function getCache($name, $default = []) {
+  public function getCache($name, array $context = [], $default = []) {
     static $cache = [];
-    $theme = $this->getName();
-    $theme_cache = self::getStorage();
-    if (!isset($cache[$theme][$name])) {
-      $value = $theme_cache->get($name);
+
+    // Prepend the theme name as the first context item, followed by cache name.
+    array_unshift($context, $name);
+    array_unshift($context, $this->getName());
+
+    // Join context together with ":" and use it as the name.
+    $name = implode(':', $context);
+
+    if (!isset($cache[$name])) {
+      $storage = self::getStorage();
+      $value = $storage->get($name);
       if (!isset($value)) {
-        $value  = is_array($default) ? new StorageItem($default, $theme_cache) : $default;
-        $theme_cache->set($name, $value);
+        $value  = is_array($default) ? new StorageItem($default, $storage) : $default;
+        $storage->set($name, $value);
       }
-      $cache[$theme][$name] = $value;
+      $cache[$name] = $value;
     }
-    return $cache[$theme][$name];
+
+    return $cache[$name];
   }
 
   /**
@@ -300,6 +427,37 @@ class Theme {
   }
 
   /**
+   * Retrieves pending updates for the theme.
+   *
+   * @return \Drupal\bootstrap\Plugin\Update\UpdateInterface[]
+   *   An array of update plugin objects.
+   */
+  public function getPendingUpdates() {
+    $pending = [];
+
+    // Only continue if the theme is Bootstrap based.
+    if ($this->isBootstrap()) {
+      $current_theme = $this->getName();
+      $schemas = $this->getSetting('schemas', []);
+      foreach ($this->getAncestry() as $ancestor) {
+        $ancestor_name = $ancestor->getName();
+        if (!isset($schemas[$ancestor_name])) {
+          $schemas[$ancestor_name] = \Drupal::CORE_MINIMUM_SCHEMA_VERSION;
+          $this->setSetting('schemas', $schemas);
+        }
+        $pending_updates = $ancestor->getUpdateManager()->getPendingUpdates($current_theme === $ancestor_name);
+        foreach ($pending_updates as $schema => $update) {
+          if ((int) $schema > (int) $schemas[$ancestor_name]) {
+            $pending[] = $update;
+          }
+        }
+      }
+    }
+
+    return $pending;
+  }
+
+  /**
    * Retrieves the CDN provider.
    *
    * @param string $provider
@@ -309,10 +467,13 @@ class Theme {
    *   A provider instance or FALSE if there is no provider.
    */
   public function getProvider($provider = NULL) {
-    $provider = $provider ?: $this->getSetting('cdn_provider');
-    $provider_manager = new ProviderManager($this);
-    if ($provider_manager->hasDefinition($provider)) {
-      return $provider_manager->createInstance($provider, ['theme' => $this]);
+    // Only continue if the theme is Bootstrap based.
+    if ($this->isBootstrap()) {
+      $provider = $provider ?: $this->getSetting('cdn_provider');
+      $provider_manager = new ProviderManager($this);
+      if ($provider_manager->hasDefinition($provider)) {
+        return $provider_manager->createInstance($provider, ['theme' => $this]);
+      }
     }
     return FALSE;
   }
@@ -325,13 +486,18 @@ class Theme {
    */
   public function getProviders() {
     $providers = [];
-    $provider_manager = new ProviderManager($this);
-    foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
-      if ($provider === 'none') {
-        continue;
+
+    // Only continue if the theme is Bootstrap based.
+    if ($this->isBootstrap()) {
+      $provider_manager = new ProviderManager($this);
+      foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
+        if ($provider === 'none') {
+          continue;
+        }
+        $providers[$provider] = $provider_manager->createInstance($provider, ['theme' => $this]);
       }
-      $providers[$provider] = $provider_manager->createInstance($provider, ['theme' => $this]);
     }
+
     return $providers;
   }
 
@@ -340,20 +506,53 @@ class Theme {
    *
    * @param string $name
    *   The name of the setting to be retrieved.
-   * @param bool $original
-   *   Retrieve the original default value from code (or base theme config),
-   *   not from the active theme's stored config.
+   * @param mixed $default
+   *   A default value to provide if the setting is not found or if the plugin
+   *   does not have a "defaultValue" annotation key/value pair. Typically,
+   *   you will likely never need to use this unless in rare circumstances
+   *   where the setting plugin exists but needs a default value not able to
+   *   be set by conventional means (e.g. empty array).
    *
    * @return mixed
-   *   The value of the requested setting, NULL if the setting does not exist.
+   *   The value of the requested setting, NULL if the setting does not exist
+   *   and no $default value was provided.
    *
    * @see theme_get_setting()
    */
-  public function getSetting($name, $original = FALSE) {
-    if ($original) {
-      return $this->settings()->getOriginal($name);
+  public function getSetting($name, $default = NULL) {
+    $value = $this->settings()->get($name);
+    return !isset($value) ? $default : $value;
+  }
+
+  /**
+   * Retrieves a theme's setting plugin instance(s).
+   *
+   * @param string $name
+   *   Optional. The name of a specific setting plugin instance to return.
+   *
+   * @return \Drupal\bootstrap\Plugin\Setting\SettingInterface|\Drupal\bootstrap\Plugin\Setting\SettingInterface[]|NULL
+   *   If $name was provided, it will either return a specific setting plugin
+   *   instance or NULL if not set. If $name was omitted it will return an array
+   *   of setting plugin instances, keyed by their name.
+   */
+  public function getSettingPlugin($name = NULL) {
+    $settings = [];
+
+    // Only continue if the theme is Bootstrap based.
+    if ($this->isBootstrap()) {
+      $setting_manager = new SettingManager($this);
+      foreach (array_keys($setting_manager->getDefinitions()) as $setting) {
+        $settings[$setting] = $setting_manager->createInstance($setting);
+      }
     }
-    return $this->settings()->get($name);
+
+    // Return a specific setting plugin.
+    if (isset($name)) {
+      return isset($settings[$name]) ? $settings[$name] : NULL;
+    }
+
+    // Return all setting plugins.
+    return $settings;
   }
 
   /**
@@ -361,14 +560,12 @@ class Theme {
    *
    * @return \Drupal\bootstrap\Plugin\Setting\SettingInterface[]
    *   An associative array of setting objects, keyed by their name.
+   *
+   * @deprecated Will be removed in a future release. Use \Drupal\bootstrap\Theme::getSettingPlugin instead.
    */
   public function getSettingPlugins() {
-    $settings = [];
-    $setting_manager = new SettingManager($this);
-    foreach (array_keys($setting_manager->getDefinitions()) as $setting) {
-      $settings[$setting] = $setting_manager->createInstance($setting);
-    }
-    return $settings;
+    Bootstrap::deprecated();
+    return $this->getSettingPlugin();
   }
 
   /**
@@ -394,6 +591,24 @@ class Theme {
    */
   public function getTitle() {
     return $this->getInfo('name') ?: $this->getName();
+  }
+
+  /**
+   * Retrieves the update plugin manager for the theme.
+   *
+   * @return \Drupal\bootstrap\Plugin\UpdateManager|FALSE
+   *   The Update plugin manager or FALSE if theme is not Bootstrap based.
+   */
+  public function getUpdateManager() {
+    // Immediately return if theme is not Bootstrap based.
+    if (!$this->isBootstrap()) {
+      return FALSE;
+    }
+
+    if (!$this->updateManager) {
+      $this->updateManager = new UpdateManager($this);
+    }
+    return $this->updateManager;
   }
 
   /**
@@ -444,9 +659,50 @@ class Theme {
   /**
    * Installs a Bootstrap based theme.
    */
-  final protected function install() {
-    $update_manager = new UpdateManager($this);
-    $this->setSetting('schema', $update_manager->getLatestVersion());
+  protected function install() {
+    // Immediately return if theme is not Bootstrap based.
+    if (!$this->isBootstrap()) {
+      return;
+    }
+
+    $schemas = [];
+    foreach ($this->getAncestry() as $ancestor) {
+      $schemas[$ancestor->getName()] = $ancestor->getUpdateManager()->getLatestSchema();
+    }
+    $this->setSetting('schemas', $schemas);
+  }
+
+  /**
+   * Indicates whether the theme is bootstrap based.
+   *
+   * @return bool
+   *   TRUE or FALSE
+   */
+  public function isBootstrap() {
+    return $this->bootstrap;
+  }
+
+  /**
+   * Indicates whether the theme is in "development mode".
+   *
+   * @return bool
+   *   TRUE or FALSE
+   *
+   * @see \Drupal\bootstrap\Theme::dev
+   */
+  public function isDev() {
+    return $this->dev;
+  }
+
+  /**
+   * Returns the livereload URL set, if any.
+   *
+   * @return string
+   *
+   * @see \Drupal\bootstrap\Theme::livereload
+   */
+  public function livereloadUrl() {
+    return $this->livereload;
   }
 
   /**
